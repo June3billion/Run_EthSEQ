@@ -1,0 +1,18 @@
+# Tools
+TOOL_PLINK: "/NAS/data/personal/june_dev/Tools/PLINK/plink "
+TOOL_RSCRIPT: "/usr/bin/env Rscript "
+
+# Files
+FILE_system_model_IDT_World: "/Resource/Model_EthSEQ_IDT_World.gds"
+FILE_system_model_IDT_AFR: "/Resource/Model_EthSEQ_IDT_AFR.gds"
+FILE_system_model_IDT_EUR: "/Resource/Model_EthSEQ_IDT_EUR.gds"
+FILE_system_model_IDT_AMR: "/Resource/Model_EthSEQ_IDT_AMR.gds"
+FILE_system_model_IDT_SAS: "/Resource/Model_EthSEQ_IDT_SAS.gds"
+FILE_system_model_IDT_EAS: "/Resource/Model_EthSEQ_IDT_EAS.gds"
+
+
+# Scripts
+SCRIPT_Execute_EthSEQ: "Run_EthSEQmodel.r "
+
+
+
