@@ -1,2 +1,0 @@
-sample.id	pop	type	contribution
-EPA21-EAOG_EPA21-EAOG	EUR	CLOSEST	EUR(41.12%)|AMR(21.07%)|SAS(22.61%)|AFR(15.19%)

@@ -1,2 +1,0 @@
-sample.id	pop	type	contribution
-EPA21-EAOG_EPA21-EAOG	CEU	CLOSEST	GBR(19.14%)|FIN(18.7%)|IBS(18.84%)|CEU(24.46%)|TSI(18.86%)

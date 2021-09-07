@@ -3,6 +3,7 @@
 # Date: 20210830
 # Description: Identify genetic ethnic group by using EthSEQ packages
 # Usage: ./run_EthSEQ_for_IDT_v1.py <Input file: /fulpath/.vcf>  <Ouput Dir: Full path for outputn dir>
+test
 
 # Keep in mind
 ## This kit used published tool, EthSEQ packages (GPL-3 License)
