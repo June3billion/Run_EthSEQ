@@ -1,18 +1,41 @@
-"""VCF를 받아서 인종 확인"""
-"""::인종확인을 위해 EthSEQ R package를 사용"""
-"""::EthSEQ 사용을 위해 input VCF을 가공"""
-"""::VCF가공은 FORMAT을 GT만 남기는 것이며, PLINK2 프로그램을 이용"""
+#   README
+#   Description:
+#       This script identifies the sample's ethnicity based on the input sample's VCF file.
+#           EthSEQ package was used for ethnicity identification.
+#           This script converts the input VCF file to the EthSEQ-compatible VCF file.
+#           PLINK2 was used to convert the input VCF file, by leaving only GT information of Information column.
+#   Required: (Prepared with config file)
+#       PLINK2 (The version used for develop: v2.00a3LM )
+#       Rscript with EthSEQ installed (The versions used for develop: R = 4.1.1, EthSEQ = 2.1.4)
+#   Author: June (Youngjune Bhak)
+#   Contact: youngjune29bhak@gmail.com
+#   Date (ver): 2021.09.24
 import sys
 import os
 import yaml
 import logging
 import argparse
+import subprocess
+import traceback
+from timeit import default_timer as timer
+from datetime import timedelta
 
 
-def get_args():
-    """Argparse module."""
-    logging.basicConfig(level=logging.DEBUG)
-    parser = argparse.ArgumentParser(description="### EthSEQ running with vcf")
+def parse_arg() -> argparse.Namespace:
+    """Guide and check arguments required for this script.
+
+    Note:
+        Author: June
+        Date (version): 2021.09.23
+
+    Returns:
+        argparse.Namespace: config, input, outdir
+
+    Examples:
+        >>> No arguments are required. 
+            Just Use this in main function as following "args = parse_arg()" 
+    """
+    parser = argparse.ArgumentParser(description="#", epilog="#")
     parser.add_argument(
         "--config", "-c", help="input config file", type=str, required=True
     )
@@ -22,100 +45,203 @@ def get_args():
     parser.add_argument(
         "--outdir", "-o", help="output directory", type=str, required=True
     )
+    parser.print_help()
+
+    if not os.path.isfile(parser.parse_args().config):
+        print("Function: parse_arg: Error: Invalid --config")
+        sys.exit()
+    if not os.access(parser.parse_args().config, os.R_OK):
+        print("Function: parse_arg: Error: No permission to read --config")
+        sys.exit()
+
+    if not os.path.isfile(parser.parse_args().input):
+        print("Function: parse_arg: Error: Invalid --input")
+        sys.exit()
+    if not os.access(parser.parse_args().input, os.R_OK):
+        print("Function: parse_arg: Error: No permission to read --input")
+        sys.exit()
+
+    if not os.path.isdir(parser.parse_args().outdir):
+        print("Function: parse_arg: Error: Invalid --outdir")
+        sys.exit()
+    if not os.access(parser.parse_args().input, os.W_OK):
+        print("Function: parse_arg: Error: No permission to write --outdir")
+        sys.exit()
     return parser.parse_args()
 
 
-def parse_config(input_config: str):
-    """[summary] config parsing module
-    
+def reformat_vcf_for_EthSEQ(input_vcf: str, outdir: str, config: dict) -> None:
+    """Reformat the input VCF file to the EthSEQ-compatible VCF file
+        It generate EthSEQ-compatble VCF file to {outdir}/temp.vcf
+
+    Note:
+        Required: 
+            PLINK2 (The version used for develop: v2.00a3LM )
+        Author: June (youngjune29bhak@gmail.com)
+        Date (version): 2021.09.23
+        Output:
+            The output file will be generates as following path and name {outdir}/temp.vcf
+            
     Args:
-        config_file (str): config 파일
+        input_vcf (str): Input vcf file with full path
+        outdir (str): output directory. 
+        config (dict): config dictionary
     """
-    with open(input_config, "r") as handle:
-        config = yaml.load(handle, Loader=yaml.FullLoader)
-    return config
+    time_start = timer()
+    plink2 = config["TOOL"]["PLINK2"]
+    if not os.access(plink2, os.X_OK):
+        print(
+            f"Function: reformat_vcf_for_EthSEQ: Error: No permission to excecute {plink2}"
+        )
+        sys.exit()
 
+    reformat_cmd = plink2
+    reformat_cmd += f" --vcf {input_vcf} "
+    reformat_cmd += " --snps-only just-acgt --max-alleles 2 --threads 1 "
+    reformat_cmd += f" --recode vcf --out {outdir}/temp "
+    try:
+        print("\nFunction: reformat_vcf_for_EthSEQ: Start")
+        print(f"Function: reformat_vcf_for_EthSEQ: Input: {input_vcf}")
+        print(
+            f"Function: reformat_vcf_for_EthSEQ: Output expected: {outdir}/temp.vcf"
+        )
+        subprocess.run(reformat_cmd, shell=True, check=True, timeout=600)
+    except subprocess.TimeoutExpired:
+        print("Function: reformat_vcf_for_EthSEQ: Error: Timeout")
+        sys.exit()
+    except subprocess.CalledProcessError:
+        print("Function: reformat_vcf_for_EthSEQ: Error: File not found")
+        sys.exit()
+    except subprocess.SubprocessError:
+        print("Function: reformat_vcf_for_EthSEQ: Error: Subprocess Failed")
+        sys.exit()
 
-def reformat_vcf_for_EthSEQ(input_vcf: str, outdir: str, config: dict):
-    """[summary] input VCF 받아서, PLINK2를 이용하여, EthSEQ를 위한 포맷의 VCF를 생성함 (<outdir>/temp.vcf)
+    if os.path.isfile(f"{outdir}/temp.vcf"):
+        print(
+            f"Function: reformat_vcf_for_EthSEQ: Output generated: {outdir}/temp.vcf"
+        )
+    else:
+        print(
+            "Function: reformat_vcf_for_EthSEQ: Finish: Faied: No output generated"
+        )
+        sys.exit()
 
-    Args:
-        input_vcf (str): 최초에 받은 VCF 파일
-        outdir (str): 결과 파일을 저장할 경로
-        config (dict): config 파일
-    """
-    tool = f'{os.path.dirname(os.path.realpath(__file__))}/{config["SCRIPT_reformat_VCF"]} '
-    plink2 = f'{config["TOOL_PLINK2"]} '
-
-    command = f"sh {tool} {plink2} {input_vcf} {outdir}"
-    os.system(command)
-
-
-def run_EthSEQ(input_vcf: str, outdir: str, config: dict, ethnicgroup=str("World")):
-    """[summary] input VCF와 주어진 인종 그룹에 따라서 EthSEQ를 수행함. 기본 인종 그룹은 World
-
-    Args:
-        input_vcf (str): EthSEQ 분석을 수행할 VCF 파일 (FORMAT컬럼에 GT만 있음). 
-            "reformat_vcf_for_EthSEQ" fuction을 통해 생성 가능
-        outdir (str): 결과 파일을 저장할 경로
-        config (dict): config 파일
-        ethnicgroup (str): EthSEQ 분석을 수행할 때 이용할 인종 모델. 
-            기본은 World이며 AFR (아프리카), AMR (아메리카), EUR (유럽), EAS (동부아시아), SAS (서부아시아) 선택 가능
-    """
-    tool = f'{config["TOOL_RSCRIPT"]} '
-    tool += f'{os.path.dirname(os.path.realpath(__file__))}/{config["SCRIPT_Execute_EthSEQ"]} '
-    EthSEQ_model_name_key = f"FILE_system_model_IDT_{ethnicgroup}"
-    EthSEQ_model = f"{os.path.dirname(os.path.realpath(__file__))}/{config[EthSEQ_model_name_key]} "
-    outdir_EthSEQ = f"{outdir}/{ethnicgroup}/"
-
-    command = f"{tool} {input_vcf} {EthSEQ_model} {outdir_EthSEQ}"
-    os.system(command)
-
-    with open(f"{outdir_EthSEQ}/Report.txt") as handle:
-        for line in handle:
-            if line.startswith("sample.id"):
-                header = line.strip().split("\t")
-                sample_idx = header.index("sample.id")
-                pop_idx = header.index("pop")
-                type_idx = header.index("type")
-                contribution_idx = header.index("contribution")
-            data = line.strip().split("\t")
-    return dict(
-        sample=data[sample_idx],
-        EthSEQ_result_ModelEthnicGroup = ethnicgroup,
-        EthSEQ_result_ethnicgroup_classification=data[pop_idx],
-        EthSEQ_result_ethnicgroup_classificaiton_type=data[type_idx],
-        EthSEQ_result_ethnicgroup_classificaiton_contribution=data[contribution_idx],
+    time_elapsed = timedelta(seconds=timer() - time_start)
+    print(
+        f"Function: reformat_vcf_for_EthSEQ: Finish: Time elapsed: '{time_elapsed}'\n"
     )
 
 
-def write_final_EthSEQ_report(outdir: str, EthSEQ_result_ethnicwide: dict, config: dict):
-    """[summary] input VCF와 주어진 인종 그룹에 따라서 EthSEQ를 수행함. 기본 인종 그룹은 World
+def execute_EthSEQ(
+    input_vcf: str, outdir: str, config: dict, ethnicgroup=str("World")
+) -> str:
+    """It executes Rscript that run EthSEQ R packages with the EthSEQ-compatible VCF file
+        The EthSEQ-compatible VCF file can be generated by 
+        1) using "reformat_vcf_for_EthSEQ" function, or
+        2) parsing the input VCF file in other ways (leave only GT from INFO column).
+
+    Note:
+        Required:
+            Rscript with EthSEQ installed (designated in the config file)
+            (The versions used for develop: R = 4.1.1, EthSEQ = 2.1.4)
+        Author: June (youngjune29bhak@gmail.com)
+        Date (version): 2021.09.23
+        Args:
+            ethnicgroup: Using only the Group "World" is suggested in the current version (2021.09.23),
+            due to the resolution problem (can be updated once WGS is used)
+        Output:
+            The output file will be generates as following path and name {outdir}/Ethnicity_{ethnicgroup}-wide/Report.txt
+            Also, this function returns the output file's full path as string
 
     Args:
-        outdir (str): 결과 파일을 저장할 경로
-        EthSEQ_result_ethnicwide (dict): "run_EthSEQ" function의 결과. 
-            (분석시 사용한 인종 그룹이 AFR (아프리카), AMR (아메리카), EUR (유럽), EAS (동부아시아), SAS (서부아시아) 중 하나 인 것)
-        config (dict): config 파일
+        input_vcf (str): input VCF file
+        outdir (str): output directory
+        config (dict): config dictionary
+        ethnicgroup (str): Population group to use in EthSEQ. The default is "World". 
+            Addtional options are belows.
+                AFR: African
+                AMR: American
+                EUR: European
+                EAS: East Asian
+                SAS: South Asian
+    
+    Returns:
+        str: Output file path
 
+    Examples:
+        >>> execute_EthSEQ("Input VCF file", "Outdir", "Config dictionary")
+        >>> execute_EthSEQ("input.vcf", "./", {'key': 'value'}, "World") 
+        >>> -> ./World/Report.txt
     """
-    Sample = EthSEQ_result_ethnicwide["sample"]
-    SuperPop_fullname = config[EthSEQ_result_ethnicwide["EthSEQ_result_ModelEthnicGroup"]]
-    DetailPop_fullname = config[EthSEQ_result_ethnicwide["EthSEQ_result_ethnicgroup_classification"]]
+    time_start = timer()
+    Rscript = config["TOOL"]["RSCRIPT"]
+    script_EthSEQ = f'{os.path.dirname(os.path.realpath(__file__))}/{config["SCRIPT"]["R_Execute_EthSEQ"]}'
+    if not os.access(Rscript, os.X_OK):
+        print(
+            f"Function: reformat_vcf_for_EthSEQ: Error: No permission to excecute: {Rscript}"
+        )
+        sys.exit()
+    if not os.access(script_EthSEQ, os.X_OK,):
+        print(
+            f"Function: reformat_vcf_for_EthSEQ: Error: No permission to excecute: {script_EthSEQ}"
+        )
+        sys.exit()
 
-    file_report = open(f"{outdir}/report_ethnicity.txt", "w")
-    print("Sample\tSuperPop\tDetailPop",file=file_report)
-    print(f"{Sample}\t{SuperPop_fullname}\t{DetailPop_fullname}",file=file_report)
-    file_report.close()
+    tool = f"{Rscript} {script_EthSEQ}"
+    EthSEQ_model_path = f"{os.path.dirname(os.path.realpath(__file__))}"
+    EthSEQ_model_name = f'{config["GDS"][ethnicgroup]}'
+    EthSEQ_model = f"{EthSEQ_model_path}/{EthSEQ_model_name}"
+    outdir_EthSEQ = f"{outdir}/Ethnicity_{ethnicgroup}-wide"
+
+    EthSEQ_cmd = f"{tool} {input_vcf} {EthSEQ_model} {outdir_EthSEQ}"
+    try:
+        print("\nFunction: run_EthSEQ: Start")
+        print(f"Function: run_EthSEQ: Input: {outdir}/temp.vcf")
+        print(
+            f"Function: run_EthSEQ: Output expected: {outdir_EthSEQ}/Report.txt"
+        )
+        subprocess.run(EthSEQ_cmd, shell=True, check=True)
+    except subprocess.TimeoutExpired:
+        print("Function: run_EthSEQ: Error: Timeout")
+        sys.exit()
+    except subprocess.CalledProcessError:
+        print("Function: run_EthSEQ: Error: File not found")
+        sys.exit()
+    except subprocess.SubprocessError:
+        print("Function: run_EthSEQ: Error: Subprocess Failed")
+        sys.exit()
+
+    if os.path.isfile(f"{outdir_EthSEQ}/Report.txt"):
+        print(
+            f"Function: run_EthSEQ: Output generated: {outdir_EthSEQ}/Report.txt"
+        )
+    else:
+        print("Function: run_EthSEQ: Finish: Faied: No output generated")
+        sys.exit()
+
+    time_elapsed = timedelta(seconds=timer() - time_start)
+    print(f"Function: run_EthSEQ: Finish: Time elapsed: '{time_elapsed}'\n")
+    return f"{outdir_EthSEQ}/Report.txt"
 
 
 def main():
-    args = get_args()
-    config = parse_config(args.config)
+    args = parse_arg()
+    time_start = timer()
+    print("running_EthSEQ.py: Start\n")
+
+    config = yaml.load(open(args.config, "r"), Loader=yaml.FullLoader)
     reformat_vcf_for_EthSEQ(args.input, args.outdir, config)
-    EthSEQ_result_worldwide = run_EthSEQ(f'{args.outdir}/temp.vcf',args.outdir, config)
-    EthSEQ_result_ethnicwide = run_EthSEQ(f'{args.outdir}/temp.vcf',args.outdir, config, EthSEQ_result_worldwide["EthSEQ_result_ethnicgroup_classification"])
-    write_final_EthSEQ_report(args.outdir,EthSEQ_result_ethnicwide,config)
+    EthSEQ_report = execute_EthSEQ(
+        f"{args.outdir}/temp.vcf", args.outdir, config
+    )
+    print(f"\nrunning_EthSEQ.py: Output generated: {EthSEQ_report}")
+
+    # Place for the GEBRA submission
+    # Place for the GEBRA submission
+    # Place for the GEBRA submission
+
+    time_elapsed = timedelta(seconds=timer() - time_start)
+    print(f"running_EthSEQ.py: Finish: Time elapsed: '{time_elapsed}'\n")
 
 
 if __name__ == "__main__":
