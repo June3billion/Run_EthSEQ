@@ -2,13 +2,16 @@ TOOL:
   PLINK: "/NAS/data/personal/june_dev/Tools/PLINK/plink"
   PLINK2: "/NAS/data/personal/june_dev/Tools/PLINK2/plink2"
   RSCRIPT: "/NAS/data/personal/june_dev/Tools/R/New/R-4.1.1/Build/bin/Rscript"
+OPTION:
+  PLINK2:
+    REFORMAT_VCF: "--snps-only just-acgt --max-alleles 2 --threads 1 --recode vcf"
 GDS:
-  World: "/Resource/Model_EthSEQ_IDT_World.gds"
-  AFR: "/Resource/Model_EthSEQ_IDT_AFR.gds"
-  EUR: "/Resource/Model_EthSEQ_IDT_EUR.gds"
-  AME: "/Resource/Model_EthSEQ_IDT_AMR.gds"
-  SAS: "/Resource/Model_EthSEQ_IDT_SAS.gds"
-  EAS: "/Resource/Model_EthSEQ_IDT_EAS.gds"
+  World: "Resource/Model_EthSEQ_IDT_World.gds"
+  AFR: "Resource/Model_EthSEQ_IDT_AFR.gds"
+  EUR: "Resource/Model_EthSEQ_IDT_EUR.gds"
+  AMR: "Resource/Model_EthSEQ_IDT_AMR.gds"
+  SAS: "Resource/Model_EthSEQ_IDT_SAS.gds"
+  EAS: "Resource/Model_EthSEQ_IDT_EAS.gds"
 SCRIPT:
   R_Execute_EthSEQ: "Run_EthSEQmodel.r"
   SH_Reformat_VCF: "converter_all_format_vcf_to_EthSEQ_input_vcf.sh"

@@ -1,10 +1,8 @@
 import sys
 import os
 import yaml
-import logging
 import argparse
 import subprocess
-import traceback
 from timeit import default_timer as timer
 from datetime import timedelta
 from running_EthSEQ import *
@@ -30,7 +28,7 @@ def test_reformat_vcf_for_EthSEQ():
 
     input_vcf = "/NAS/data/personal/june_dev/Git/Run_EthSEQ/Run_EthSEQ/Example/EPA21-EAOG.final.vcf.gz"
     outdir = (
-        "/NAS/data/personal/june_dev/Git/Run_EthSEQ/Run_EthSEQ/Example/Test_Run"
+        "/NAS/data/personal/june_dev/Git/Run_EthSEQ/Run_EthSEQ/Example/"
     )
     file_config = "/NAS/data/personal/june_dev/Git/Run_EthSEQ/Run_EthSEQ/config_EthSEQ.yaml"
     config = yaml.load(open(file_config, "r"), Loader=yaml.FullLoader)
@@ -81,9 +79,9 @@ def test_execute_EthSEQ() -> str:
         >>> -> ./World/Report.txt
     """
     outdir = (
-        "/NAS/data/personal/june_dev/Git/Run_EthSEQ/Run_EthSEQ/Example/Test_Run"
+        "/NAS/data/personal/june_dev/Git/Run_EthSEQ/Run_EthSEQ/Example/"
     )
-    input_vcf = "/NAS/data/personal/june_dev/Git/Run_EthSEQ/Run_EthSEQ/Example/Test_Run/temp.vcf"
+    input_vcf = "/NAS/data/personal/june_dev/Git/Run_EthSEQ/Run_EthSEQ/Example/temp.vcf"
     file_config = "/NAS/data/personal/june_dev/Git/Run_EthSEQ/Run_EthSEQ/config_EthSEQ.yaml"
     config = yaml.load(open(file_config, "r"), Loader=yaml.FullLoader)
     ethnicgroup = "World"
