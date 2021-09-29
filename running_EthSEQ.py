@@ -10,13 +10,14 @@
             Rscript with EthSEQ installed (The versions used for develop: R = 4.1.1, EthSEQ = 2.1.4)
     Author: June (Youngjune Bhak)
     Contact: youngjune29bhak@gmail.com
-    Date (ver): 2021.09.24
+    Date (ver): 2021.09.29
  """
 import sys
 import os
 import yaml
 import argparse
 import subprocess
+import time
 from timeit import default_timer as timer
 from datetime import timedelta
 
@@ -70,6 +71,44 @@ def parse_arg() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def run_commandline(commandline: str) -> None:
+    """[summary]
+
+    Note:
+        [description]
+
+    Args:
+        commandline (str): [description]
+
+    Raises:
+        SubprocessFailedError: [description]
+        SubprocessFailedError: [description]
+        SubprocessFailedError: [description]
+    """
+    for count in range(1, 5):
+        print(f"Running commandline - trial {count}: {commandline}")
+        try:
+            subprocess.run(
+                "/bin/bash",
+                shell=True,
+                check=True,
+                timeout=600,
+                input=commandline.encode("utf-8"),
+            )
+            return
+
+        except subprocess.TimeoutExpired:
+            print(f"Timeout Expired. trial {count+1}.")
+            time.sleep(600)
+        except subprocess.CalledProcessError:
+            print(f"CalledProcessError")
+            sys.exit()
+        except subprocess.SubprocessError:
+            print(f".SubprocessError")
+            sys.exit()
+    print(f"All trial failed. Command: {commandline}")
+
+
 def reformat_vcf_for_EthSEQ(input_vcf: str, outdir: str, config: dict) -> None:
     """Reformat the input VCF file to the EthSEQ-compatible VCF file
         It generate EthSEQ-compatble VCF file to {outdir}/temp.vcf
@@ -78,7 +117,7 @@ def reformat_vcf_for_EthSEQ(input_vcf: str, outdir: str, config: dict) -> None:
         Required: 
             PLINK2 (The version used for develop: v2.00a3LM )
         Author: June (youngjune29bhak@gmail.com)
-        Date (version): 2021.09.23
+        Date (version): 2021.09.29
         Output:
             The output file will be generates as following path and name {outdir}/temp.vcf
             
@@ -97,23 +136,8 @@ def reformat_vcf_for_EthSEQ(input_vcf: str, outdir: str, config: dict) -> None:
     option_plink2_reformatVCF = config["OPTION"]["PLINK2"]["REFORMAT_VCF"]
 
     reformat_cmd = f"{plink2} --vcf {input_vcf} {option_plink2_reformatVCF} --out {outdir}/temp"
-
-    try:
-        print("\nFunction: reformat_vcf_for_EthSEQ: Start")
-        print(f"Function: reformat_vcf_for_EthSEQ: Command: {reformat_cmd}")
-        print(
-            f"Function: reformat_vcf_for_EthSEQ: Output expected: {outdir}/temp.vcf"
-        )
-        subprocess.run(reformat_cmd, shell=True, check=True, timeout=600)
-    except subprocess.TimeoutExpired:
-        print("Function: reformat_vcf_for_EthSEQ: Error: TimeoutExpired")
-        sys.exit()
-    except subprocess.CalledProcessError:
-        print("Function: reformat_vcf_for_EthSEQ: Error: CalledProcessError")
-        sys.exit()
-    except subprocess.SubprocessError:
-        print("Function: reformat_vcf_for_EthSEQ: Error: SubprocessError")
-        sys.exit()
+    print(f"Function: reformat_vcf_for_EthSEQ: Start: Command: {reformat_cmd}")
+    run_commandline(reformat_cmd)
 
     if os.path.exists(f"{outdir}/temp.vcf"):
         print(
@@ -144,7 +168,7 @@ def execute_EthSEQ(
             Rscript with EthSEQ installed (designated in the config file)
             (The versions used for develop: R = 4.1.1, EthSEQ = 2.1.4)
         Author: June (youngjune29bhak@gmail.com)
-        Date (version): 2021.09.23
+        Date (version): 2021.09.29
         Args:
             ethnicgroup: Using only the Group "World" is suggested in the current version (2021.09.23),
             due to the resolution problem (can be updated once WGS is used)
@@ -199,22 +223,8 @@ def execute_EthSEQ(
     EthSEQ_cmd = (
         f"{Rscript} {script_EthSEQ} {input_vcf} {EthSEQ_model} {outdir_EthSEQ}"
     )
-    try:
-        print("\nFunction: run_EthSEQ: Start")
-        print(f"Function: run_EthSEQ: Command: {EthSEQ_cmd}")
-        print(
-            f"Function: run_EthSEQ: Output expected: {outdir_EthSEQ}/Report.txt"
-        )
-        subprocess.run(EthSEQ_cmd, shell=True, check=True, timeout=600)
-    except subprocess.TimeoutExpired:
-        print("Function: run_EthSEQ: Error: TimeoutExpired")
-        sys.exit()
-    except subprocess.CalledProcessError:
-        print("Function: run_EthSEQ: Error: CalledProcessError")
-        sys.exit()
-    except subprocess.SubprocessError:
-        print("Function: run_EthSEQ: Error: SubprocessError")
-        sys.exit()
+    print(f"\nFunction: run_EthSEQ: Start: Command: {EthSEQ_cmd}")
+    run_commandline(EthSEQ_cmd)
 
     if os.path.exists(f"{outdir_EthSEQ}/Report.txt"):
         print(
@@ -246,7 +256,7 @@ def main():
             Rscript with EthSEQ installed (The versions used for develop: R = 4.1.1, EthSEQ = 2.1.4)
         Author: June (Youngjune Bhak)
         Contact: youngjune29bhak@gmail.com
-        Date (ver): 2021.09.24
+        Date (ver): 2021.09.28
     """
     args = parse_arg()
     time_start = timer()
