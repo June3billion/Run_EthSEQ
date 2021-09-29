@@ -1,0 +1,35 @@
+PLINK v2.00a3LM 64-bit Intel (16 Aug 2021)
+Options in effect:
+  --export vcf
+  --max-alleles 2
+  --out /NAS/data/personal/june_dev/Git/Run_EthSEQ/Run_EthSEQ/Example//temp
+  --snps-only just-acgt
+  --threads 1
+  --vcf /NAS/data/personal/june_dev/Git/Run_EthSEQ/Run_EthSEQ/Example/EPA21-EAOG.final.vcf.gz
+
+Hostname: adenine01
+Working directory: /NAS/data/personal/june_dev/Git/Run_EthSEQ/Run_EthSEQ
+Start time: Wed Sep 29 10:49:01 2021
+
+Random number seed: 1632880141
+257746 MiB RAM detected; reserving 128873 MiB for main workspace.
+Using 1 compute thread.
+--vcf: 78893 variants scanned.
+--vcf:
+/NAS/data/personal/june_dev/Git/Run_EthSEQ/Run_EthSEQ/Example//temp-temporary.pgen
++
+/NAS/data/personal/june_dev/Git/Run_EthSEQ/Run_EthSEQ/Example//temp-temporary.pvar.zst
++
+/NAS/data/personal/june_dev/Git/Run_EthSEQ/Run_EthSEQ/Example//temp-temporary.psam
+written.
+1 sample (0 females, 0 males, 1 ambiguous; 1 founder) loaded from
+/NAS/data/personal/june_dev/Git/Run_EthSEQ/Run_EthSEQ/Example//temp-temporary.psam.
+67495 out of 78893 variants loaded from
+/NAS/data/personal/june_dev/Git/Run_EthSEQ/Run_EthSEQ/Example//temp-temporary.pvar.zst.
+Note: No phenotype data present.
+67495 variants remaining after main filters.
+--export vcf to
+/NAS/data/personal/june_dev/Git/Run_EthSEQ/Run_EthSEQ/Example//temp.vcf ...
+done.
+
+End time: Wed Sep 29 10:49:01 2021

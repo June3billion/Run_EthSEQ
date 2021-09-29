@@ -138,7 +138,7 @@ def reformat_vcf_for_EthSEQ(input_vcf: str, outdir: str, config: dict) -> None:
     option_plink2_reformatVCF = config["OPTION"]["PLINK2"]["REFORMAT_VCF"]
 
     reformat_cmd = f"{plink2} --vcf {input_vcf} {option_plink2_reformatVCF} --out {outdir}/temp"
-    print(f"Function: reformat_vcf_for_EthSEQ: Start)
+    print(f"Function: reformat_vcf_for_EthSEQ: Start")
     run_commandline(reformat_cmd)
 
     if os.path.exists(f"{outdir}/temp.vcf"):
@@ -225,7 +225,7 @@ def execute_EthSEQ(
     EthSEQ_cmd = (
         f"{Rscript} {script_EthSEQ} {input_vcf} {EthSEQ_model} {outdir_EthSEQ}"
     )
-    print(f"\nFunction: run_EthSEQ: Start)
+    print(f"\nFunction: run_EthSEQ: Start")
     run_commandline(EthSEQ_cmd)
 
     if os.path.exists(f"{outdir_EthSEQ}/Report.txt"):
