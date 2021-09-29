@@ -1,15 +1,25 @@
-# Authour: June (Youngjune Bhak)
-# Contact: youngjune29bhak@gmail.com
-# Date: 20210830
-# Description: Identify genetic ethnic group by using EthSEQ packages
-# Usage: ./run_EthSEQ_for_IDT_v1.py <Input file: /fulpath/.vcf>  <Ouput Dir: Full path for outputn dir>
+""" 
+    This script identifies the sample's ethnicity based on the input sample's VCF file.
+        EthSEQ package was used for ethnicity identification.
+        This script converts the input VCF file to the EthSEQ-compatible VCF file.
+        PLINK2 was used to convert the input VCF file, by leaving only GT information of Information column.
+   
+    Note:
+        The current version was constructed by using 1KGP data
+        The current version assumes input VCF's kit is IDT
+        Required: (Prepared with config file)
+            PLINK2 (The version used for develop: v2.00a3LM )
+            Rscript with EthSEQ installed (The versions used for develop: R = 4.1.1, EthSEQ = 2.1.4)
+        Author: June (Youngjune Bhak)
+        Contact: youngjune29bhak@gmail.com
+        Date (ver): 2021.09.30
 
-# Keep in mind
-## This kit used published tool, EthSEQ packages (GPL-3 License)
-### https://cran.r-project.org/web/packages/EthSEQ/index.html
-### https://pubmed.ncbi.nlm.nih.gov/28369222/
-
-## This kit used 1KGP variant set
-
-## This kit fitted to IDT panel data
-
+    Usage example: ./running_EthSEQ.py -c ./config_EthSEQ.yaml -i ./Example/EPA21-EAOG.final.vcf.gz -o ./Example
+    Output expected:
+        .Example/Ethnicity_World-wide/Reprot.txt: Inferred ethnicity.
+        .Example/Ethnicity_World-wide/Reprot.pdf: PCA plots about ethnicity classification.
+    Temp files expected:
+        .Example/temp.vcf and Example/temp.log: temporary vcf files for this analysis. Can be used for QC
+        .Example/Ethnicity_World-wide/*gds: temporary files for this analysis.
+        .Example/Ethnicity_World-wide/*PCAcoord: PCA coordinate in PCA plot
+ """

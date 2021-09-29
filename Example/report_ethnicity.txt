@@ -1,2 +1,0 @@
-SampleID	SuperPopName	SuperPopType	SuperPopContribution	DetailPopName	DetailPopType	DetailPopContribution
-NA	EUR	CLOSEST	EUR(41.12%)|AMR(21.07%)|SAS(22.61%)|AFR(15.19%)	CEU	CLOSEST	GBR(19.14%)|FIN(18.7%)|IBS(18.84%)|CEU(24.46%)|TSI(18.86%)
