@@ -72,20 +72,22 @@ def parse_arg() -> argparse.Namespace:
 
 
 def run_commandline(commandline: str) -> None:
-    """[summary]
+    """ Try local command 5 times
 
     Note:
-        [description]
+        Author: June (youngjune29bhak@gmail.com)
+        Date (version): 2021.09.29
 
     Args:
-        commandline (str): [description]
+        commandline (str): command line for subprocess.run
 
     Raises:
-        SubprocessFailedError: [description]
-        SubprocessFailedError: [description]
-        SubprocessFailedError: [description]
+        TimeoutExpired: 600s limits, 5 times
+        CalledProcessError: CalledProcessError
+        SubprocessError: SubprocessError
+        All trial failed error: All trial failed error
     """
-    for count in range(1, 5):
+    for count in range(5):
         print(f"Running commandline - trial {count}: {commandline}")
         try:
             subprocess.run(
@@ -136,7 +138,7 @@ def reformat_vcf_for_EthSEQ(input_vcf: str, outdir: str, config: dict) -> None:
     option_plink2_reformatVCF = config["OPTION"]["PLINK2"]["REFORMAT_VCF"]
 
     reformat_cmd = f"{plink2} --vcf {input_vcf} {option_plink2_reformatVCF} --out {outdir}/temp"
-    print(f"Function: reformat_vcf_for_EthSEQ: Start: Command: {reformat_cmd}")
+    print(f"Function: reformat_vcf_for_EthSEQ: Start)
     run_commandline(reformat_cmd)
 
     if os.path.exists(f"{outdir}/temp.vcf"):
@@ -223,7 +225,7 @@ def execute_EthSEQ(
     EthSEQ_cmd = (
         f"{Rscript} {script_EthSEQ} {input_vcf} {EthSEQ_model} {outdir_EthSEQ}"
     )
-    print(f"\nFunction: run_EthSEQ: Start: Command: {EthSEQ_cmd}")
+    print(f"\nFunction: run_EthSEQ: Start)
     run_commandline(EthSEQ_cmd)
 
     if os.path.exists(f"{outdir_EthSEQ}/Report.txt"):
@@ -256,7 +258,7 @@ def main():
             Rscript with EthSEQ installed (The versions used for develop: R = 4.1.1, EthSEQ = 2.1.4)
         Author: June (Youngjune Bhak)
         Contact: youngjune29bhak@gmail.com
-        Date (ver): 2021.09.28
+        Date (ver): 2021.09.29
     """
     args = parse_arg()
     time_start = timer()
